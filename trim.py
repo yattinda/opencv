@@ -9,5 +9,5 @@ width = img.shape [1]
 trim_img = img [150 : height, 150 : width]
 cv2.imshow('trim_Lenna', trim_img)
 
-cv2.waitKey(100000)
+cv2.waitKey(0)
 cv2.destroyAllWindows()
