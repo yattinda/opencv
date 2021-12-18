@@ -72,8 +72,16 @@ def detect_contour(image_path):
     s_side = width if width > height else height
     min_accuracy = min(accuracy_aspect(width, height),  accuracy_area(area, circumference), accuracy_rad(radius, s_side))
     max_accuracy = max(accuracy_aspect(width, height),  accuracy_area(area, circumference), accuracy_rad(radius, s_side))
+    sum_accuracy = accuracy_aspect(width, height) + accuracy_area(area, circumference) + accuracy_rad(radius, s_side)
+
     if max_accuracy - min_accuracy > 0.15 and min_accuracy > 0.5:
         min_accuracy -= 0.35
+    if sum_accuracy <= 1.8:
+        min_accuracy = max_accuracy
+
+    print(accuracy_aspect(width, height))
+    print(accuracy_area(area, circumference))
+    print(accuracy_rad(radius, s_side))
     print("#######################")
     print(min_accuracy)
 
@@ -82,4 +90,4 @@ def detect_contour(image_path):
     cv2.waitKey(0)
 
 if __name__ == '__main__':
-  detect_contour('image/circlefake.jpg')
+  detect_contour('image/circle3.jpg')
