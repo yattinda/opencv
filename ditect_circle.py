@@ -18,6 +18,12 @@ def accuracy_aspect(width, height):
     ratio = 1 - np.tanh(ratio - 1)
     return ratio
 
+def accuracy_rad(radius, s_side):
+    s_side = s_side / 2
+    rad_ratio = (radius / s_side) if radius > s_side else (s_side / radius)
+    rad_ratio = 1 - np.tanh(rad_ratio - 1)
+    return rad_ratio
+
 def detect_contour(image_path):
     src = cv2.imread(image_path, cv2.IMREAD_COLOR)
     re_length = 800
@@ -28,10 +34,8 @@ def detect_contour(image_path):
     #2値化
     retval, bw = cv2.threshold(gray, 130, 255, cv2.THRESH_BINARY)
     bw_floodfill = bw.copy()
-
     h, w = bw.shape[:2]
     mask = np.zeros((h+2, w+2), np.uint8)
-
     cv2.floodFill(bw_floodfill, mask, (0,0), 255);
     bw_floodfill_inv = cv2.bitwise_not(bw_floodfill)
     kernel = np.ones((15, 15), np.uint8)
@@ -43,6 +47,7 @@ def detect_contour(image_path):
     circumference = 0
     width = 0
     height = 0
+    radius = 0
 
     for cnt in contours:
         #円周と面積
@@ -59,18 +64,22 @@ def detect_contour(image_path):
             width = tmp_width
         if height < tmp_height:
             height = tmp_height
+        #外接円
+        center, tmp_radius = cv2.minEnclosingCircle(cnt)
+        if radius < tmp_radius:
+            radius = tmp_radius
 
-    accuracy = accuracy_aspect(width, height) if accuracy_aspect(width, height) < accuracy_area(area, circumference) else accuracy_area(area, circumference)
-    if abs(accuracy_aspect(width, height) - accuracy_area(area, circumference)) > 0.15 and accuracy > 0.5:
-        accuracy -= 0.35
-
-    print(accuracy)
+    s_side = width if width > height else height
+    min_accuracy = min(accuracy_aspect(width, height),  accuracy_area(area, circumference), accuracy_rad(radius, s_side))
+    max_accuracy = max(accuracy_aspect(width, height),  accuracy_area(area, circumference), accuracy_rad(radius, s_side))
+    if max_accuracy - min_accuracy > 0.15 and min_accuracy > 0.5:
+        min_accuracy -= 0.35
+    print("#######################")
+    print(min_accuracy)
 
     cv2.imshow("Inverted Floodfilled Image", bw_floodfill_inv)
     cv2.imshow("dilation_img", dilation_img)
     cv2.waitKey(0)
 
-
-
 if __name__ == '__main__':
-  detect_contour('image/circle.jpg')
+  detect_contour('image/circlefake.jpg')
