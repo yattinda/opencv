@@ -69,20 +69,23 @@ def detect_contour(image_path):
         if radius < tmp_radius:
             radius = tmp_radius
 
-    s_side = width if width > height else height
-    min_accuracy = min(accuracy_aspect(width, height),  accuracy_area(area, circumference), accuracy_rad(radius, s_side))
-    max_accuracy = max(accuracy_aspect(width, height),  accuracy_area(area, circumference), accuracy_rad(radius, s_side))
-    sum_accuracy = accuracy_aspect(width, height) + accuracy_area(area, circumference) + accuracy_rad(radius, s_side)
-    mid_accuracy = sum_accuracy - max_accuracy - min_accuracy
+    if area or circumference or width or height or radius != 0:
+        s_side = width if width > height else height
+        min_accuracy = min(accuracy_aspect(width, height),  accuracy_area(area, circumference), accuracy_rad(radius, s_side))
+        max_accuracy = max(accuracy_aspect(width, height),  accuracy_area(area, circumference), accuracy_rad(radius, s_side))
+        sum_accuracy = accuracy_aspect(width, height) + accuracy_area(area, circumference) + accuracy_rad(radius, s_side)
+        mid_accuracy = sum_accuracy - max_accuracy - min_accuracy
 
-    accuracy = min_accuracy
+        accuracy = min_accuracy
 
-    if mid_accuracy > 0.98:
-        accuracy = mid_accuracy
-    elif max_accuracy - min_accuracy > 0.30 and min_accuracy < 0.5:
-        accuracy = sum_accuracy / 3
-    if sum_accuracy <= 1.8:
-        accuracy = max_accuracy
+        if mid_accuracy > 0.98:
+            accuracy = mid_accuracy
+        elif max_accuracy - min_accuracy > 0.30 and min_accuracy < 0.5:
+            accuracy = sum_accuracy / 3
+        if sum_accuracy <= 1.8:
+            accuracy = max_accuracy
+    else:
+        accuracy = 0
 
     print(accuracy_aspect(width, height))
     print(accuracy_area(area, circumference))
@@ -95,4 +98,4 @@ def detect_contour(image_path):
     cv2.waitKey(0)
 
 if __name__ == '__main__':
-  detect_contour('image/circle.jpg')
+  detect_contour('image/circle5.jpg')
