@@ -2,18 +2,19 @@ import cv2
 import numpy as np
 import math
 
-def circle_accuracy_at_area(area, circumference):
+def accuracy_area(area, circumference):
     area = int(area)
     circumference = int(circumference)
     #area, circumferenceはピクセル数のため真円を元に補正値を掛ける
     correction_value = 1.257
     accuracy = correction_value * ((4 * np.pi * area) / (circumference ** 2))
-    accuracy = np.tanh(accuracy - 1) + 1
+    accuracy = np.tanh(accuracy - 1)
+    accuracy = 1 + accuracy if accuracy < 0 else 1 - accuracy
     return accuracy
 
-def circle_accuracy_at_aspect_ratio(width, height):
+def accuracy_aspect(width, height):
     ratio = (height / width) if height > width else (width / height)
-    #np.tanh(ratio - 1) は0 < x < 1(大きいほど楕円に近い)
+    #np.tanh(ratio - 1) は0 < x < 1(小さいほど真円に近い)
     ratio = 1 - np.tanh(ratio - 1)
     return ratio
 
@@ -59,12 +60,11 @@ def detect_contour(image_path):
         if height < tmp_height:
             height = tmp_height
 
+    accuracy = accuracy_aspect(width, height) if accuracy_aspect(width, height) < accuracy_area(area, circumference) else accuracy_area(area, circumference)
+    if abs(accuracy_aspect(width, height) - accuracy_area(area, circumference)) > 0.15 and accuracy > 0.5:
+        accuracy -= 0.35
 
-
-
-    print(circle_accuracy_at_area(area, circumference))
-    print("###############################")
-    print(circle_accuracy_at_aspect_ratio(width, height))
+    print(accuracy)
 
     cv2.imshow("Inverted Floodfilled Image", bw_floodfill_inv)
     cv2.imshow("dilation_img", dilation_img)
@@ -73,4 +73,4 @@ def detect_contour(image_path):
 
 
 if __name__ == '__main__':
-  detect_contour('image/circle2.jpg')
+  detect_contour('image/circle.jpg')
