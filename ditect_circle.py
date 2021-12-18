@@ -73,21 +73,26 @@ def detect_contour(image_path):
     min_accuracy = min(accuracy_aspect(width, height),  accuracy_area(area, circumference), accuracy_rad(radius, s_side))
     max_accuracy = max(accuracy_aspect(width, height),  accuracy_area(area, circumference), accuracy_rad(radius, s_side))
     sum_accuracy = accuracy_aspect(width, height) + accuracy_area(area, circumference) + accuracy_rad(radius, s_side)
+    mid_accuracy = sum_accuracy - max_accuracy - min_accuracy
 
-    if max_accuracy - min_accuracy > 0.15 and min_accuracy > 0.5:
-        min_accuracy -= 0.35
+    accuracy = min_accuracy
+
+    if mid_accuracy > 0.98:
+        accuracy = mid_accuracy
+    elif max_accuracy - min_accuracy > 0.30 and min_accuracy < 0.5:
+        accuracy = sum_accuracy / 3
     if sum_accuracy <= 1.8:
-        min_accuracy = max_accuracy
+        accuracy = max_accuracy
 
     print(accuracy_aspect(width, height))
     print(accuracy_area(area, circumference))
     print(accuracy_rad(radius, s_side))
     print("#######################")
-    print(min_accuracy)
+    print(accuracy)
 
     cv2.imshow("Inverted Floodfilled Image", bw_floodfill_inv)
     cv2.imshow("dilation_img", dilation_img)
     cv2.waitKey(0)
 
 if __name__ == '__main__':
-  detect_contour('image/circle3.jpg')
+  detect_contour('image/circle.jpg')
